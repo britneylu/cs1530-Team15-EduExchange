@@ -45,7 +45,22 @@ const db = require('../db/database');
  *                   example: Get all listings
  */
 router.get('/', (req, res) => {
-    res.json({ message: 'Get all listings' });
+    try {
+        const { category, condition, min_price, max_price } = req.query;
+        let query = 'SELECT * FROM listings WHERE status = ?';
+        const params = ['Available'];
+
+        if (category)  { query += ' AND category = ?';              params.push(category); }
+        if (condition) { query += ' AND condition = ?';             params.push(condition); }
+        if (min_price) { query += ' AND price >= ?';                params.push(Number(min_price)); }
+        if (max_price) { query += ' AND price <= ?';                params.push(Number(max_price)); }
+
+        query += ' ORDER BY created_at DESC';
+        const listings = db.prepare(query).all(...params);
+        res.json(listings);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 /**
@@ -76,7 +91,13 @@ router.get('/', (req, res) => {
  *         description: Listing not found
  */
 router.get('/:id', (req, res) => {
-    res.json({ message: `Get listing ${req.params.id}` });
+    try {
+        const listing = db.prepare('SELECT * FROM listings WHERE id = ?').get(req.params.id);
+        if (!listing) return res.status(404).json({ error: 'Listing not found' });
+        res.json(listing);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 /**
@@ -106,8 +127,31 @@ router.get('/:id', (req, res) => {
  *                   $ref: '#/components/schemas/Listing'
  */
 router.post('/', (req, res) => {
-    const listing = req.body;
-    res.status(201).json({ message: 'Listing created', listing });
+    try {
+        const { seller_id, title, description, price, category, condition, image_url } = req.body;
+        if (!seller_id || !title || !description || !price || !category || !condition) {
+            return res.status(400).json({ error: 'Missing required fields: seller_id, title, description, price, category, condition' });
+        }
+
+        // Check for duplicate active listing by the same seller (FR12)
+        const duplicate = db.prepare(`
+            SELECT id FROM listings
+            WHERE seller_id = ? AND title = ? AND description = ? AND status IN ('Available','Pending')
+        `).get(seller_id, title, description);
+        if (duplicate) {
+            return res.status(409).json({ error: 'A listing with the same title and description already exists.' });
+        }
+
+        const result = db.prepare(`
+            INSERT INTO listings (seller_id, title, description, price, category, condition, image_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(seller_id, title, description, price, category, condition, image_url || null);
+
+        const newListing = db.prepare('SELECT * FROM listings WHERE id = ?').get(result.lastInsertRowid);
+        res.status(201).json(newListing);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 /**
@@ -144,7 +188,30 @@ router.post('/', (req, res) => {
  *         description: Listing not found
  */
 router.put('/:id', (req, res) => {
-    res.json({ message: `Update listing ${req.params.id}` });
+    try {
+        const listing = db.prepare('SELECT * FROM listings WHERE id = ?').get(req.params.id);
+        if (!listing) return res.status(404).json({ error: 'Listing not found' });
+        if (listing.status === 'Sold') return res.status(403).json({ error: 'Cannot edit a sold listing' });
+
+        const { title, description, price, category, condition, image_url, status } = req.body;
+        db.prepare(`
+            UPDATE listings
+            SET title = COALESCE(?, title),
+                description = COALESCE(?, description),
+                price = COALESCE(?, price),
+                category = COALESCE(?, category),
+                condition = COALESCE(?, condition),
+                image_url = COALESCE(?, image_url),
+                status = COALESCE(?, status),
+                updated_at = datetime('now')
+            WHERE id = ?
+        `).run(title, description, price, category, condition, image_url, status, req.params.id);
+
+        const updated = db.prepare('SELECT * FROM listings WHERE id = ?').get(req.params.id);
+        res.json(updated);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 /**
@@ -175,7 +242,17 @@ router.put('/:id', (req, res) => {
  *         description: Listing not found
  */
 router.delete('/:id', (req, res) => {
-    res.json({ message: `Delete listing ${req.params.id}` });
+    try {
+        const listing = db.prepare('SELECT * FROM listings WHERE id = ?').get(req.params.id);
+        if (!listing) return res.status(404).json({ error: 'Listing not found' });
+
+        // Soft delete: archive instead of removing from DB
+        db.prepare(`UPDATE listings SET status = 'Archived', updated_at = datetime('now') WHERE id = ?`)
+          .run(req.params.id);
+        res.json({ message: `Listing ${req.params.id} archived successfully` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 module.exports = router;
