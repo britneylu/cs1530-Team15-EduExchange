@@ -2,9 +2,11 @@ const express = require('express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+const path = require('path');
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '../')));
 
 const swaggerOptions = {
     definition: {
@@ -30,7 +32,7 @@ app.use('/messages', messagesRouter);
 app.use('/auth', authRouter);
 
 app.get('/', (req, res) => {
-    res.json({ message: 'EduExchange API is running' });
+    res.sendFile(path.join(__dirname, '../index.html'));
 });
 
 app.listen(PORT, () => {
