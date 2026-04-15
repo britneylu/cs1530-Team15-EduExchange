@@ -2,7 +2,31 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 
-// not actually certain this will be the flow but just wanted to have some sort of stubs
+function getGoogleOAuthConfig() {
+    return {
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        redirectUri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback',
+        hostedDomain: process.env.GOOGLE_HOSTED_DOMAIN,
+    };
+}
+
+function buildGoogleAuthUrl() {
+    const { clientId, redirectUri, hostedDomain } = getGoogleOAuthConfig();
+    const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: 'openid email profile',
+        access_type: 'offline',
+        prompt: 'select_account',
+    });
+
+    if (hostedDomain) {
+        params.set('hd', hostedDomain);
+    }
+
+    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+}
 
 /**
  * @swagger
@@ -23,7 +47,16 @@ const db = require('../db/database');
  *                   example: Redirect to Google OAuth
  */
 router.get('/google', (req, res) => {
-    res.json({ message: 'Redirect to Google OAuth' });
+    const { clientId } = getGoogleOAuthConfig();
+
+    if (!clientId) {
+        return res.status(503).json({
+            error: 'Google OAuth is not configured.',
+            missing: ['GOOGLE_CLIENT_ID'],
+        });
+    }
+
+    res.redirect(buildGoogleAuthUrl());
 });
 
 /**
