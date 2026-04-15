@@ -45,10 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // 3. fetch data from your Express route (listings.js)
       // the URL /listings matches app.use('/listings', listingsRouter) in server.js
       const url = `/listings?${queryParams.toString()}`;
-      console.log("Fetching from:", url); // shows exactly what's being sent
+      // console.log("Fetching from:", url); // shows exactly what's being sent
       const response = await fetch(`/listings?${queryParams.toString()}`);
       const listings = await response.json();
-      console.log("Data received from DB:", listings); // shows if data came back
+      // console.log("Data received from DB:", listings); // shows if data came back
 
       // 4. update the UI with results
       renderListings(listings);
