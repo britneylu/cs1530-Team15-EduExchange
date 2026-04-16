@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>EduExchange Marketplace</title>
   <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
 </head>
 
 <body>
@@ -42,10 +43,10 @@
         <option value="Like New">Like New</option>
       </select>
 
-      <button onclick="applyFilters()">Apply Filters</button>
+      <button id="applyFiltersBtn">Apply Filters</button>
     </div>
 
-    <!--  DYNAMIC LISTINGS CONTAINER -->
+    <!-- DYNAMIC LISTINGS -->
     <div class="grid" id="listingsGrid"></div>
 
   </div>
@@ -81,6 +82,5 @@
   </div>
 </div>
 
-<script src="script.js"></script>
 </body>
 </html>

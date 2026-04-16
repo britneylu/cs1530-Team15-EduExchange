@@ -20,130 +20,64 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // LOAD LISTINGS ON HOME PAGE
-  loadListings();
+  // handle filter button click
+  const filterBtn = document.getElementById('apply-filters-btn');
+  const listingsGrid = document.querySelector('.grid');
 
-  // MODAL CLOSE LOGIC
-  const modal = document.getElementById("listingModal");
-  const closeBtn = document.querySelector(".close");
+  async function applyFilters() {
+    // 1. grab values from the UI (IDs match index.html)
+    const category = document.getElementById('category-filter')?.value;
+    const maxPrice = document.getElementById('price-filter')?.value;
+    const condition = document.getElementById('condition-filter')?.value;
 
-  if (closeBtn) {
-    closeBtn.onclick = () => modal.style.display = "none";
+    // 2. build the query string for the backend
+    let queryParams = new URLSearchParams();
+    if (category && category !== "All Categories") queryParams.append('category', category);
+    if (maxPrice) queryParams.append('max_price', maxPrice);
+    if (condition && condition !== "All Conditions") queryParams.append('condition', condition);
+
+    try {
+      // 3. fetch data from your Express route (listings.js)
+      // the URL /listings matches app.use('/listings', listingsRouter) in server.js
+      const url = `/listings?${queryParams.toString()}`;
+      // console.log("Fetching from:", url); // shows exactly what's being sent
+      const response = await fetch(`/listings?${queryParams.toString()}`);
+      const listings = await response.json();
+      // console.log("Data received from DB:", listings); // shows if data came back
+
+      // 4. update the UI with results
+      renderListings(listings);
+    } catch (err) {
+      console.error("Filtering failed:", err);
+    }
   }
 
-  const chatModal = document.getElementById("chatModal");
-  const closeChat = document.querySelector(".close-chat");
+  function renderListings(listings) {
+    if (!listingsGrid) return;
+    
+    listingsGrid.innerHTML = ''; // clear current static/old listings
+    
+    if (listings.length === 0) {
+      listingsGrid.innerHTML = '<p style="grid-column: 1/-1;">No items found matching those filters.</p>';
+      return;
+    }
 
-  if (closeChat) {
-    closeChat.onclick = () => chatModal.style.display = "none";
+    listings.forEach(item => {
+      listingsGrid.innerHTML += `
+        <div class="listing">
+          <h3>${item.title}</h3>
+          <p>$${item.price} • ${item.condition}</p>
+          <button onclick="alert('Messaging feature coming soon!')">Message Seller</button>
+        </div>
+      `;
+    });
   }
 
-  window.onclick = (e) => {
-    if (e.target === modal) modal.style.display = "none";
-    if (e.target === chatModal) chatModal.style.display = "none";
-  };
-
-  const messageBtn = document.getElementById("messageBtn");
-  if (messageBtn) {
-    messageBtn.onclick = () => {
-      chatModal.style.display = "block";
-    };
+  // attach the event listener to the "Apply Filters" button
+  if (filterBtn) {
+    filterBtn.addEventListener('click', applyFilters);
   }
+
+  // load all items automatically when the page first loads
+  applyFilters();
 });
-
-// CREATE LISTING
-function handleCreateListing(event) {
-  event.preventDefault();
-
-  const listing = {
-    title: document.getElementById("title").value,
-    description: document.getElementById("description").value,
-    price: document.getElementById("price").value,
-    category: document.getElementById("category").value,
-    condition: document.getElementById("condition").value
-  };
-
-  let listings = JSON.parse(localStorage.getItem("listings")) || [];
-  listings.push(listing);
-
-  localStorage.setItem("listings", JSON.stringify(listings));
-
-  alert("Listing created!");
-  window.location.href = "index.html";
-}
-
-// LOAD LISTINGS
-function loadListings() {
-  const grid = document.getElementById("listingsGrid");
-  if (!grid) return;
-
-  grid.innerHTML = "";
-
-  const listings = JSON.parse(localStorage.getItem("listings")) || [];
-
-  listings.forEach(item => {
-    const div = document.createElement("div");
-    div.className = "listing";
-
-    div.dataset.category = item.category;
-    div.dataset.price = item.price;
-    div.dataset.condition = item.condition;
-
-    div.onclick = () =>
-      openModal(item.title, "$" + item.price, item.description);
-
-    div.innerHTML = `
-      <h3>${item.title}</h3>
-      <p>$${item.price} • ${item.condition}</p>
-    `;
-
-    grid.appendChild(div);
-  });
-}
-
-// FILTERS
-function applyFilters() {
-  const category = document.getElementById("categoryFilter").value;
-  const maxPrice = document.getElementById("priceFilter").value;
-  const condition = document.getElementById("conditionFilter").value;
-
-  const listings = document.querySelectorAll(".listing");
-
-  listings.forEach(item => {
-    const itemCategory = item.dataset.category;
-    const itemPrice = parseFloat(item.dataset.price);
-    const itemCondition = item.dataset.condition;
-
-    let show = true;
-
-    if (category !== "All" && itemCategory !== category) show = false;
-    if (maxPrice && itemPrice > parseFloat(maxPrice)) show = false;
-    if (condition !== "All" && itemCondition !== condition) show = false;
-
-    item.style.display = show ? "block" : "none";
-  });
-}
-
-// MODAL
-function openModal(title, price, description) {
-  document.getElementById("listingModal").style.display = "block";
-
-  document.getElementById("modalTitle").innerText = title;
-  document.getElementById("modalPrice").innerText = price;
-  document.getElementById("modalDescription").innerText = description;
-}
-
-// CHAT
-function sendMessage() {
-  const input = document.getElementById("chatInput");
-  const chatBox = document.getElementById("chatBox");
-
-  if (input.value.trim() !== "") {
-    const msg = document.createElement("p");
-    msg.innerHTML = "<strong>You:</strong> " + input.value;
-
-    chatBox.appendChild(msg);
-    input.value = "";
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-}
