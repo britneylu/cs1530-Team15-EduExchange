@@ -3,6 +3,7 @@
 <head>
   <title>EduExchange Marketplace</title>
   <link rel="stylesheet" href="style.css">
+  <script src="script.js"></script>
 </head>
 
 <body>
@@ -23,21 +24,23 @@
 <h2>Browse Listings</h2>
 
 <div class="filters">
-  <select>
-    <option>All Categories</option>
-    <option>Textbooks</option>
-    <option>Electronics</option>
+  <select id="category-filter">
+    <option value="">All Categories</option>
+    <option value="Textbooks">Textbooks</option>
+    <option value="Electronics">Electronics</option>
+    <option value="Furniture">Furniture</option>
   </select>
 
-  <input type="number" placeholder="Max Price">
+  <input type="number" id="price-filter" placeholder="Max Price">
 
-  <select>
-    <option>All Conditions</option>
-    <option>New</option>
-    <option>Used</option>
+  <select id="condition-filter">
+    <option value="">All Conditions</option>
+    <option value="New">New</option>
+    <option value="Like New">Like New</option>
+    <option value="Used">Used</option>
   </select>
 
-  <button>Apply Filters</button>
+  <button id="apply-filters-btn">Apply Filters</button>
 </div>
 
 <div class="grid">
