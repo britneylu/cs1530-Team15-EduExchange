@@ -2,9 +2,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   document.body.style.opacity = "1";
 
-  const links = document.querySelectorAll("a");
-
-  links.forEach(link => {
+  // smooth navigation
+  document.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", (e) => {
       const href = link.getAttribute("href");
 
@@ -20,64 +19,137 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // handle filter button click
-  const filterBtn = document.getElementById('apply-filters-btn');
-  const listingsGrid = document.querySelector('.grid');
+  // FILTER BUTTON
+  const filterBtn = document.getElementById("applyFiltersBtn");
 
-  async function applyFilters() {
-    // 1. grab values from the UI (IDs match index.html)
-    const category = document.getElementById('category-filter')?.value;
-    const maxPrice = document.getElementById('price-filter')?.value;
-    const condition = document.getElementById('condition-filter')?.value;
-
-    // 2. build the query string for the backend
-    let queryParams = new URLSearchParams();
-    if (category && category !== "All Categories") queryParams.append('category', category);
-    if (maxPrice) queryParams.append('max_price', maxPrice);
-    if (condition && condition !== "All Conditions") queryParams.append('condition', condition);
-
-    try {
-      // 3. fetch data from your Express route (listings.js)
-      // the URL /listings matches app.use('/listings', listingsRouter) in server.js
-      const url = `/listings?${queryParams.toString()}`;
-      // console.log("Fetching from:", url); // shows exactly what's being sent
-      const response = await fetch(`/listings?${queryParams.toString()}`);
-      const listings = await response.json();
-      // console.log("Data received from DB:", listings); // shows if data came back
-
-      // 4. update the UI with results
-      renderListings(listings);
-    } catch (err) {
-      console.error("Filtering failed:", err);
-    }
-  }
-
-  function renderListings(listings) {
-    if (!listingsGrid) return;
-    
-    listingsGrid.innerHTML = ''; // clear current static/old listings
-    
-    if (listings.length === 0) {
-      listingsGrid.innerHTML = '<p style="grid-column: 1/-1;">No items found matching those filters.</p>';
-      return;
-    }
-
-    listings.forEach(item => {
-      listingsGrid.innerHTML += `
-        <div class="listing">
-          <h3>${item.title}</h3>
-          <p>$${item.price} • ${item.condition}</p>
-          <button onclick="alert('Messaging feature coming soon!')">Message Seller</button>
-        </div>
-      `;
-    });
-  }
-
-  // attach the event listener to the "Apply Filters" button
   if (filterBtn) {
-    filterBtn.addEventListener('click', applyFilters);
+    filterBtn.addEventListener("click", applyFilters);
   }
 
-  // load all items automatically when the page first loads
+  // MODALS
+  const chatModal = document.getElementById("chatModal");
+  const listingModal = document.getElementById("listingModal");
+
+  const closeChat = document.querySelector(".close-chat");
+  const closeListing = document.querySelector(".close");
+
+  if (closeChat) {
+    closeChat.onclick = () => chatModal.style.display = "none";
+  }
+
+  if (closeListing) {
+    closeListing.onclick = () => listingModal.style.display = "none";
+  }
+
+  window.onclick = (e) => {
+    if (e.target === chatModal) chatModal.style.display = "none";
+    if (e.target === listingModal) listingModal.style.display = "none";
+  };
+
+  // LOAD INITIAL LISTINGS
   applyFilters();
 });
+
+
+// APPLY FILTERS (BACKEND)
+async function applyFilters() {
+  const category = document.getElementById("categoryFilter")?.value;
+  const maxPrice = document.getElementById("priceFilter")?.value;
+  const condition = document.getElementById("conditionFilter")?.value;
+
+  let params = new URLSearchParams();
+
+  if (category && category !== "All") params.append("category", category);
+  if (maxPrice) params.append("max_price", maxPrice);
+  if (condition && condition !== "All") params.append("condition", condition);
+
+  try {
+    const response = await fetch(`/listings?${params.toString()}`);
+    const listings = await response.json();
+
+    renderListings(listings);
+  } catch (err) {
+    console.error("Filtering failed:", err);
+  }
+}
+
+
+// RENDER LISTINGS
+function renderListings(listings) {
+  const grid = document.getElementById("listingsGrid");
+  if (!grid) return;
+
+  grid.innerHTML = "";
+
+  if (!listings || listings.length === 0) {
+    grid.innerHTML = `<p style="grid-column: 1/-1;">No items found matching those filters.</p>`;
+    return;
+  }
+
+  listings.forEach(item => {
+    grid.innerHTML += `
+      <div class="listing">
+        <h3>${item.title}</h3>
+        <p>$${item.price} • ${item.condition}</p>
+
+        <button onclick="openChat('${item.title}')">
+          Message Seller
+        </button>
+      </div>
+    `;
+  });
+}
+
+
+// CHAT
+function openChat(title) {
+  const chatModal = document.getElementById("chatModal");
+  const chatBox = document.getElementById("chatBox");
+
+  if (!chatModal || !chatBox) return;
+
+  chatModal.style.display = "block";
+
+  chatBox.innerHTML = `
+    <p><strong>System:</strong> Chat opened for "${title}"</p>
+    <p><strong>Seller:</strong> Hi! Is this still available?</p>
+  `;
+}
+
+// SEND MESSAGE
+function sendMessage() {
+  const input = document.getElementById("chatInput");
+  const chatBox = document.getElementById("chatBox");
+
+  if (!input || !chatBox) return;
+
+  if (input.value.trim() !== "") {
+    const msg = document.createElement("p");
+    msg.innerHTML = "<strong>You:</strong> " + input.value;
+
+    chatBox.appendChild(msg);
+    input.value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+}
+
+async function handleCreateListing(event) {
+  event.preventDefault();
+
+  const listing = {
+    title: document.getElementById("title").value,
+    description: document.getElementById("description").value,
+    price: document.getElementById("price").value,
+    category: document.getElementById("category").value,
+    condition: document.getElementById("condition").value
+  };
+
+  await fetch("/listings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(listing)
+  });
+
+  alert("Listing created!");
+  window.location.href = "index.html";
+}
