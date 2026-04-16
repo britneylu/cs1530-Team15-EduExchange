@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>EduExchange</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -22,23 +23,31 @@
 
 <h2>Create Listing</h2>
 
-<form>
+<form id="createListingForm" onsubmit="handleCreateListing(event)">
 
-  <input type="text" placeholder="Title">
+  <input type="text" id="title" placeholder="Title" required>
 
-  <textarea placeholder="Description"></textarea>
+  <textarea id="description" placeholder="Description" required></textarea>
 
-  <input type="number" placeholder="Price">
+  <input type="number" id="price" placeholder="Price" required>
 
-  <select>
-    <option>Category</option>
+  <select id="category" required>
+    <option value="">Category</option>
     <option>Textbooks</option>
     <option>Electronics</option>
+    <option>Clothing</option>
+    <option>Furniture</option>
+    <option>Other</option>
   </select>
 
-  <input type="file">
+  <select id="condition" required>
+    <option value="">Condition</option>
+    <option>New</option>
+    <option>Used</option>
+    <option>Like New</option>
+  </select>
 
-  <button>Post Listing</button>
+  <button type="submit">Post Listing</button>
 
 </form>
 
@@ -46,5 +55,6 @@
 
 </div>
 
+<script src="script.js"></script>
 </body>
 </html>

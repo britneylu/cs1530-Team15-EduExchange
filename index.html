@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>EduExchange Marketplace</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -9,56 +10,77 @@
 
 <div class="page-frame">
 
-<h1>EduExchange</h1>
+  <h1>EduExchange</h1>
 
-<nav>
-  <a href="login.html">Login</a>
-  <a href="create-listing.html">Create Listing</a>
-  <a href="signup.html">Sign Up</a>
+  <nav>
+    <a href="login.html">Login</a>
+    <a href="create-listing.html">Create Listing</a>
+    <a href="signup.html">Sign Up</a>
+  </nav>
 
-</nav>
+  <div class="container">
 
-<div class="container">
+    <h2>Browse Listings</h2>
 
-<h2>Browse Listings</h2>
+    <!-- FILTERS -->
+    <div class="filters">
+      <select id="categoryFilter">
+        <option value="All">All Categories</option>
+        <option value="Textbooks">Textbooks</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Clothing">Clothing</option>
+        <option value="Furniture">Furniture</option>
+        <option value="Other">Other</option>
+      </select>
 
-<div class="filters">
-  <select>
-    <option>All Categories</option>
-    <option>Textbooks</option>
-    <option>Electronics</option>
-  </select>
+      <input type="number" id="priceFilter" placeholder="Max Price">
 
-  <input type="number" placeholder="Max Price">
+      <select id="conditionFilter">
+        <option value="All">All Conditions</option>
+        <option value="New">New</option>
+        <option value="Used">Used</option>
+        <option value="Like New">Like New</option>
+      </select>
 
-  <select>
-    <option>All Conditions</option>
-    <option>New</option>
-    <option>Used</option>
-  </select>
+      <button onclick="applyFilters()">Apply Filters</button>
+    </div>
 
-  <button>Apply Filters</button>
-</div>
+    <!--  DYNAMIC LISTINGS CONTAINER -->
+    <div class="grid" id="listingsGrid"></div>
 
-<div class="grid">
-
-  <div class="listing">
-    <h3>Calculus Textbook</h3>
-    <p>$40 • Used</p>
-    <button>Message Seller</button>
-  </div>
-
-  <div class="listing">
-    <h3>Desk Lamp</h3>
-    <p>$15 • Like New</p>
-    <button>Message Seller</button>
   </div>
 
 </div>
 
+<!-- LISTING MODAL -->
+<div id="listingModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+
+    <h2 id="modalTitle"></h2>
+    <p id="modalPrice"></p>
+    <p id="modalDescription"></p>
+
+    <button id="messageBtn">Message Seller</button>
+  </div>
 </div>
 
+<!-- CHAT MODAL -->
+<div id="chatModal" class="modal">
+  <div class="modal-content">
+    <span class="close-chat">&times;</span>
+
+    <h2>Chat with Seller</h2>
+
+    <div id="chatBox" class="chat-box">
+      <p><strong>Seller:</strong> Hi! Is this still available?</p>
+    </div>
+
+    <input type="text" id="chatInput" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
 </div>
 
+<script src="script.js"></script>
 </body>
 </html>
