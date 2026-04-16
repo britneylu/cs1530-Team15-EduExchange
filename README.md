@@ -1,4 +1,5 @@
 # CS 1530 Team15 EduExchange
+
 ## Branching Model: GitHub Flow
 
 To maintain a stable codebase and ensure we meet our design goals, all team members must adhere to the following workflow:
@@ -19,4 +20,43 @@ To maintain a stable codebase and ensure we meet our design goals, all team memb
 
 ### 4. Cleanup
 * After a successful merge, the feature branch should be deleted to maintain a clean repository structure.
+
 ---
+
+## Project Overview and Purpose
+
+EduExchange is a student marketplace web application designed to allow university students to buy and sell items such as textbooks, electronics, clothing, and other essentials.
+
+The platform allows users to:
+- Create listings for items they want to sell
+- Browse available listings
+- Apply filters (category, price, condition)
+- View listing details
+- Message sellers through a chat modal (frontend prototype)
+
+The goal of this project is to build a full-stack application using a REST API, a database-backed backend, and a dynamic frontend UI.
+
+---
+
+## Setup/Installation Instructions
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/<your-org>/cs1530-Team15-EduExchange.git
+cd cs1530-Team15-EduExchange
+```
+---
+
+## Team
+### 
+Britney Lu: Set up infrastructure for the GitHub repository. Implemented the filtering feature by connecting the frontend UI to the SQLite database. 
+
+Emily Bartell: Developed the frontend UI for main pages of EduExchange, including listing interaction and messaging interface.
+
+Thomas Jones: Configured Render deployment for web accessibility. Updated design goals traceability to align technology choices with system requirements.
+
+Senay Yemane: Designed and implemented Google OAuth 2.0 authentication using Passport.js, including credential setup, session handling, and user creation flow.
+
+Xiangyu Li: Implemented SQLite database schema with 8 relational tables, enforced constraints, and enabled WAL mode. Built backend listing routes with filtering (FR3), duplicate prevention (FR12), and soft-delete support.
+
+Jack Drabenstadt: Developed Express.js backend structure, created API route scaffolding for listings and messaging, integrated SQLite connection layer, and added Swagger UI documentation.
