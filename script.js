@@ -92,12 +92,50 @@ function renderListings(listings) {
         <h3>${item.title}</h3>
         <p>$${item.price} • ${item.condition}</p>
 
+        <button onclick="openListingDetails(${item.id})">
+          View Details
+        </button>
+
         <button onclick="openChat('${item.title}')">
           Message Seller
         </button>
       </div>
     `;
   });
+}
+
+// OPEN LISTING DETAILS
+async function openListingDetails(id) {
+  const listingModal = document.getElementById("listingModal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalPrice = document.getElementById("modalPrice");
+  const modalDescription = document.getElementById("modalDescription");
+  const messageBtn = document.getElementById("messageBtn");
+
+  if (!listingModal || !modalTitle || !modalPrice || !modalDescription || !messageBtn) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/listings/${id}`);
+    if (!response.ok) throw new Error("Could not load listing details");
+
+    const listing = await response.json();
+
+    modalTitle.textContent = listing.title;
+    modalPrice.textContent = `$${listing.price} • ${listing.condition} • ${listing.category}`;
+    modalDescription.textContent = listing.description;
+
+    messageBtn.onclick = () => {
+      listingModal.style.display = "none";
+      openChat(listing.title);
+    };
+
+    listingModal.style.display = "block";
+  } catch (err) {
+    console.error("Failed to load listing details:", err);
+    alert("Could not load listing details. Please try again.");
+  }
 }
 
 
@@ -137,6 +175,7 @@ async function handleCreateListing(event) {
   event.preventDefault();
 
   const listing = {
+    seller_id: 1, // temporary placeholder until login/auth wiring is complete
     title: document.getElementById("title").value,
     description: document.getElementById("description").value,
     price: document.getElementById("price").value,
@@ -144,11 +183,17 @@ async function handleCreateListing(event) {
     condition: document.getElementById("condition").value
   };
 
-  await fetch("/listings", {
+  const response = await fetch("/listings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(listing)
   });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    alert(body.error || "Failed to create listing");
+    return;
+  }
 
   alert("Listing created!");
   window.location.href = "index.html";
