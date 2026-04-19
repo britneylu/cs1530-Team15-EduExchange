@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
+const { createSession, destroySession } = require('../auth/session');
 
 function getGoogleOAuthConfig() {
     return {
@@ -225,14 +226,43 @@ router.get('/google/callback', async (req, res) => {
         }
 
         const user = upsertGoogleUser(profile);
+        const session = createSession(res, user.id);
         res.json({
-            message: 'Google account verified and user record synced.',
+            message: 'Google account verified, user record synced, and session created.',
             user,
+            session: {
+                id: session.id,
+                expiresAt: session.expiresAt,
+            },
         });
     } catch (err) {
         console.error('[AUTH] Google callback failed:', err);
         res.status(500).json({ error: err.message || 'Google login failed.' });
     }
+});
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get the current authenticated user
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Current user information
+ *       401:
+ *         description: User is not logged in
+ */
+router.get('/me', (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ authenticated: false });
+    }
+
+    res.json({
+        authenticated: true,
+        user: req.user,
+        session: req.session,
+    });
 });
 
 /**
@@ -254,7 +284,8 @@ router.get('/google/callback', async (req, res) => {
  *                   example: Clear session
  */
 router.post('/logout', (req, res) => {
-    res.json({ message: 'Clear session' });
+    destroySession(req, res);
+    res.json({ message: 'Session cleared successfully' });
 });
 
 module.exports = router;
