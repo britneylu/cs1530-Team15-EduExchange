@@ -184,6 +184,16 @@ button:hover {
   opacity: 0.95;
 }
 
+#applyFiltersBtn {
+  height: 40px;
+  margin-top: 10px;
+}
+
+/* BUTTON SPACING INSIDE LISTINGS */
+.listing button {
+  margin-bottom: 10px;
+}
+
 /* LINKS */
 a {
   transition: all 0.2s ease;
