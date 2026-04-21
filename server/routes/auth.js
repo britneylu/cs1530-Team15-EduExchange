@@ -226,15 +226,8 @@ router.get('/google/callback', async (req, res) => {
         }
 
         const user = upsertGoogleUser(profile);
-        const session = createSession(res, user.id);
-        res.json({
-            message: 'Google account verified, user record synced, and session created.',
-            user,
-            session: {
-                id: session.id,
-                expiresAt: session.expiresAt,
-            },
-        });
+        createSession(res, user.id);
+        res.redirect('/login.html');
     } catch (err) {
         console.error('[AUTH] Google callback failed:', err);
         res.status(500).json({ error: err.message || 'Google login failed.' });

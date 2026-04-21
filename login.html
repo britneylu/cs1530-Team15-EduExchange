@@ -26,7 +26,7 @@
 
 <div class="auth-panel">
   <p id="auth-message">Sign in with your university Google account to access EduExchange.</p>
-  <a class="button-link google-login" href="/auth/google">Continue with Google</a>
+  <a id="google-login-button" class="button-link google-login" href="/auth/google">Continue with Google</a>
   <button id="logout-button" type="button" class="secondary-button hidden">Log Out</button>
   <div id="user-summary" class="hidden"></div>
 </div>
@@ -37,6 +37,7 @@
 
 <script>
   const authMessage = document.getElementById('auth-message');
+  const googleLoginButton = document.getElementById('google-login-button');
   const logoutButton = document.getElementById('logout-button');
   const userSummary = document.getElementById('user-summary');
   const params = new URLSearchParams(window.location.search);
@@ -60,6 +61,7 @@
 
       authMessage.textContent = 'You are already signed in.';
       authMessage.classList.add('auth-success');
+      googleLoginButton.classList.add('hidden');
 
       const heading = document.createElement('h3');
       heading.textContent = 'Signed In';
