@@ -1,6 +1,6 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const db = require('../db/database');
+const db = require("../db/database");
 
 /**
  * @swagger
@@ -54,7 +54,7 @@ const db = require('../db/database');
  *       404:
  *         description: Listing not found
  */
-router.get('/:listingId', (req, res) => {
+router.get("/:listingId", (req, res) => {
     res.json({ message: `Get messages for listing ${req.params.listingId}` });
 });
 
@@ -62,30 +62,71 @@ router.get('/:listingId', (req, res) => {
  * @swagger
  * /messages:
  *   post:
- *     summary: Send a message
+ *     summary: Send a message in a chat thread
  *     tags: [Messages]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Message'
+ *             type: object
+ *             required:
+ *               - chat_id
+ *               - sender_id
+ *               - content
+ *             properties:
+ *               chat_id:
+ *                 type: integer
+ *                 example: 1
+ *               sender_id:
+ *                 type: integer
+ *                 example: 2
+ *               content:
+ *                 type: string
+ *                 example: Is this still available?
  *     responses:
- *       200:
- *         description: Message sent successfully
+ *       201:
+ *         description: Message saved — returns the new message row
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Message sent
- *                 data:
- *                   $ref: '#/components/schemas/Message'
+ *               $ref: '#/components/schemas/Message'
+ *       400:
+ *         description: Missing required fields
+ *       404:
+ *         description: Chat not found
  */
-router.post('/', (req, res) => {
-    res.json({ message: 'Message sent', data: req.body });
+router.post("/", (req, res) => {
+    try {
+        const { chat_id, sender_id, content } = req.body;
+        if (!chat_id || !sender_id || !content || !content.trim()) {
+            return res
+                .status(400)
+                .json({
+                    error: "chat_id, sender_id, and content are required",
+                });
+        }
+
+        const chat = db
+            .prepare("SELECT id FROM chats WHERE id = ?")
+            .get(chat_id);
+        if (!chat) return res.status(404).json({ error: "Chat not found" });
+
+        const result = db
+            .prepare(
+                `
+            INSERT INTO messages (chat_id, sender_id, content) VALUES (?, ?, ?)
+        `,
+            )
+            .run(chat_id, sender_id, content.trim());
+
+        const message = db
+            .prepare("SELECT * FROM messages WHERE id = ?")
+            .get(result.lastInsertRowid);
+        res.status(201).json(message);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 module.exports = router;
