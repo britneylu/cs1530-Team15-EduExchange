@@ -1,12 +1,17 @@
-const express = require("express");
-const swaggerJsdoc = require("swagger-jsdoc");
-const swaggerUi = require("swagger-ui-express");
+require('dotenv').config();
+
+
+const express = require('express');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 const app = express();
 const PORT = process.env.PORT || 3000;
-const path = require("path");
+const path = require('path');
+const { sessionMiddleware } = require('./auth/session');
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "../")));
+app.use(sessionMiddleware);
+app.use(express.static(path.join(__dirname, '../')));
 
 const swaggerOptions = {
     definition: {
