@@ -33,10 +33,13 @@ const listingsRouter = require("./routes/listings");
 const messagesRouter = require("./routes/messages");
 const chatsRouter = require("./routes/chats");
 const authRouter = require("./routes/auth");
+const wishlistRouter = require("./routes/wishlist");
+
 app.use("/listings", listingsRouter);
 app.use("/messages", messagesRouter);
 app.use("/chats", chatsRouter);
 app.use("/auth", authRouter);
+app.use("/wishlist", wishlistRouter);
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "../index.html"));

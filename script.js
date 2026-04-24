@@ -6,44 +6,38 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("a").forEach((link) => {
         link.addEventListener("click", (e) => {
             const href = link.getAttribute("href");
-
             if (!href || href.startsWith("#")) return;
-
             e.preventDefault();
-
             document.body.style.opacity = "0";
-
-            setTimeout(() => {
-                window.location.href = href;
-            }, 200);
+            setTimeout(() => { window.location.href = href; }, 200);
         });
     });
 
     // FILTER BUTTON
     const filterBtn = document.getElementById("applyFiltersBtn");
+    if (filterBtn) { filterBtn.addEventListener("click", applyFilters); }
 
-    if (filterBtn) {
-        filterBtn.addEventListener("click", applyFilters);
-    }
+    // WISHLIST NAV BUTTON
+    const wishlistBtn = document.getElementById("viewWishlistBtn");
+    if (wishlistBtn) { wishlistBtn.addEventListener("click", openWishlist); }
 
     // MODALS
     const chatModal = document.getElementById("chatModal");
     const listingModal = document.getElementById("listingModal");
+    const wishlistModal = document.getElementById("wishlistModal");
 
     const closeChat = document.querySelector(".close-chat");
     const closeListing = document.querySelector(".close");
+    const closeWishlist = document.querySelector(".close-wishlist");
 
-    if (closeChat) {
-        closeChat.onclick = () => (chatModal.style.display = "none");
-    }
-
-    if (closeListing) {
-        closeListing.onclick = () => (listingModal.style.display = "none");
-    }
+    if (closeChat) { closeChat.onclick = () => (chatModal.style.display = "none"); }
+    if (closeListing) { closeListing.onclick = () => (listingModal.style.display = "none"); }
+    if (closeWishlist) { closeWishlist.onclick = () => (wishlistModal.style.display = "none"); }
 
     window.onclick = (e) => {
         if (e.target === chatModal) chatModal.style.display = "none";
         if (e.target === listingModal) listingModal.style.display = "none";
+        if (e.target === wishlistModal) wishlistModal.style.display = "none";
     };
 
     // LOAD INITIAL LISTINGS
@@ -57,7 +51,6 @@ async function applyFilters() {
     const condition = document.getElementById("conditionFilter")?.value;
 
     let params = new URLSearchParams();
-
     if (category && category !== "All") params.append("category", category);
     if (maxPrice) params.append("max_price", maxPrice);
     if (condition && condition !== "All") params.append("condition", condition);
@@ -65,7 +58,6 @@ async function applyFilters() {
     try {
         const response = await fetch(`/listings?${params.toString()}`);
         const listings = await response.json();
-
         renderListings(listings);
     } catch (err) {
         console.error("Filtering failed:", err);
@@ -89,17 +81,15 @@ function renderListings(listings) {
       <div class="listing">
         <h3>${item.title}</h3>
         <p>$${item.price} • ${item.condition}</p>
-
-        <button onclick="openListingDetails(${item.id})">
-          View Details
-        </button>
-
-        <button onclick="openChat(${item.id}, ${item.seller_id})">
-          Message Seller
-        </button>
+        <button onclick="openListingDetails(${item.id})">View Details</button>
+        <button onclick="openChat(${item.id}, ${item.seller_id})">Message Seller</button>
+        <button class="save-btn" id="save-btn-${item.id}" onclick="toggleWishlist(${item.id}, this)">♡ Save</button>
       </div>
     `;
     });
+
+    // After rendering, check which items are already saved so buttons reflect current state
+    loadWishlistState();
 }
 
 // OPEN LISTING DETAILS
@@ -110,20 +100,11 @@ async function openListingDetails(id) {
     const modalDescription = document.getElementById("modalDescription");
     const messageBtn = document.getElementById("messageBtn");
 
-    if (
-        !listingModal ||
-        !modalTitle ||
-        !modalPrice ||
-        !modalDescription ||
-        !messageBtn
-    ) {
-        return;
-    }
+    if (!listingModal || !modalTitle || !modalPrice || !modalDescription || !messageBtn) return;
 
     try {
         const response = await fetch(`/listings/${id}`);
         if (!response.ok) throw new Error("Could not load listing details");
-
         const listing = await response.json();
 
         modalTitle.textContent = listing.title;
@@ -158,14 +139,10 @@ async function openChat(listingId, sellerId) {
     chatModal.style.display = "block";
 
     try {
-        // Step 1: create or retrieve the chat thread
         const chatRes = await fetch("/chats", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                listing_id: listingId,
-                buyer_id: CURRENT_USER_ID,
-            }),
+            body: JSON.stringify({ listing_id: listingId, buyer_id: CURRENT_USER_ID }),
         });
         if (!chatRes.ok) {
             const err = await chatRes.json().catch(() => ({}));
@@ -175,7 +152,6 @@ async function openChat(listingId, sellerId) {
         const chat = await chatRes.json();
         currentChatId = chat.id;
 
-        // Step 2: load message history
         const msgsRes = await fetch(`/chats/${currentChatId}/messages`);
         if (!msgsRes.ok) throw new Error("Could not load messages");
         const messages = await msgsRes.json();
@@ -184,11 +160,8 @@ async function openChat(listingId, sellerId) {
         if (messages.length === 0) {
             chatBox.innerHTML = `<p><em>No messages yet. Say hello!</em></p>`;
         } else {
-            messages.forEach((msg) =>
-                appendMessage(chatBox, msg.sender_id, msg.content),
-            );
+            messages.forEach((msg) => appendMessage(chatBox, msg.sender_id, msg.content));
         }
-
         chatBox.scrollTop = chatBox.scrollHeight;
     } catch (err) {
         console.error("Failed to open chat:", err);
@@ -219,16 +192,11 @@ async function sendMessage() {
         const res = await fetch("/messages", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                chat_id: currentChatId,
-                sender_id: CURRENT_USER_ID,
-                content,
-            }),
+            body: JSON.stringify({ chat_id: currentChatId, sender_id: CURRENT_USER_ID, content }),
         });
         if (!res.ok) throw new Error("Failed to send message");
         const message = await res.json();
 
-        // Remove the "no messages" placeholder if present
         const placeholder = chatBox.querySelector("em");
         if (placeholder) placeholder.parentElement.remove();
 
@@ -236,7 +204,148 @@ async function sendMessage() {
         chatBox.scrollTop = chatBox.scrollHeight;
     } catch (err) {
         console.error("Failed to send message:", err);
-        input.value = content; // restore so user doesn't lose their text
+        input.value = content;
+    }
+}
+
+// ─────────────────────────────────────────────
+// WISHLIST (FR10)
+// ─────────────────────────────────────────────
+
+// In-memory set of saved listing IDs for the current session
+const savedListingIds = new Set();
+
+/**
+ * Fetch the user's current wishlist from the backend and update the
+ * in-memory set + any visible Save buttons to reflect saved state.
+ */
+async function loadWishlistState() {
+    try {
+        const res = await fetch(`/wishlist/${CURRENT_USER_ID}`);
+        if (!res.ok) return;
+        const items = await res.json();
+
+        savedListingIds.clear();
+        items.forEach((item) => savedListingIds.add(item.id));
+
+        // Update any Save buttons already in the DOM
+        savedListingIds.forEach((listingId) => {
+            const btn = document.getElementById(`save-btn-${listingId}`);
+            if (btn) markSaved(btn);
+        });
+    } catch (err) {
+        console.error("Could not load wishlist state:", err);
+    }
+}
+
+/**
+ * Toggle a listing's saved state.
+ * If not saved -> POST /wishlist (save it).
+ * If already saved -> DELETE /wishlist/:userId/:listingId (unsave it).
+ */
+async function toggleWishlist(listingId, btn) {
+    const isSaved = savedListingIds.has(listingId);
+
+    try {
+        if (isSaved) {
+            const res = await fetch(`/wishlist/${CURRENT_USER_ID}/${listingId}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Failed to remove from wishlist");
+            savedListingIds.delete(listingId);
+            markUnsaved(btn);
+        } else {
+            const res = await fetch("/wishlist", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id: CURRENT_USER_ID, listing_id: listingId }),
+            });
+            if (!res.ok) throw new Error("Failed to save listing");
+            savedListingIds.add(listingId);
+            markSaved(btn);
+        }
+    } catch (err) {
+        console.error("Wishlist toggle failed:", err);
+        alert("Could not update wishlist. Please try again.");
+    }
+}
+
+/** Update button appearance to show "saved" state */
+function markSaved(btn) {
+    btn.textContent = "♥ Saved";
+    btn.classList.add("saved");
+}
+
+/** Update button appearance to show "unsaved" state */
+function markUnsaved(btn) {
+    btn.textContent = "♡ Save";
+    btn.classList.remove("saved");
+}
+
+/**
+ * Open the wishlist modal and display all saved listings for the current user.
+ */
+async function openWishlist() {
+    const wishlistModal = document.getElementById("wishlistModal");
+    const wishlistItems = document.getElementById("wishlistItems");
+
+    if (!wishlistModal || !wishlistItems) return;
+
+    wishlistItems.innerHTML = `<p><em>Loading saved items...</em></p>`;
+    wishlistModal.style.display = "block";
+
+    try {
+        const res = await fetch(`/wishlist/${CURRENT_USER_ID}`);
+        if (!res.ok) throw new Error("Could not load wishlist");
+        const items = await res.json();
+
+        wishlistItems.innerHTML = "";
+
+        if (items.length === 0) {
+            wishlistItems.innerHTML = `<p>No saved listings yet. Click ♡ Save on any listing to bookmark it!</p>`;
+            return;
+        }
+
+        items.forEach((item) => {
+            wishlistItems.innerHTML += `
+        <div class="wishlist-item">
+          <h3>${item.title}</h3>
+          <p>$${item.price} • ${item.condition} • ${item.category}</p>
+          <p>${item.description}</p>
+          <button onclick="removeFromWishlist(${item.id}, this)">Remove</button>
+        </div>
+      `;
+        });
+    } catch (err) {
+        console.error("Failed to open wishlist:", err);
+        wishlistItems.innerHTML = `<p><em>Could not load wishlist. Please try again.</em></p>`;
+    }
+}
+
+/**
+ * Remove a listing from wishlist directly from the wishlist modal.
+ * Also updates the Save button on the listing card if visible.
+ */
+async function removeFromWishlist(listingId, btn) {
+    try {
+        const res = await fetch(`/wishlist/${CURRENT_USER_ID}/${listingId}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to remove");
+
+        savedListingIds.delete(listingId);
+
+        // Remove the wishlist card from the modal
+        btn.closest(".wishlist-item").remove();
+
+        // Update the Save button on the main listings grid if it exists
+        const saveBtn = document.getElementById(`save-btn-${listingId}`);
+        if (saveBtn) markUnsaved(saveBtn);
+
+        // Show empty message if no items left
+        const wishlistItems = document.getElementById("wishlistItems");
+        if (wishlistItems && wishlistItems.children.length === 0) {
+            wishlistItems.innerHTML = `<p>No saved listings yet. Click ♡ Save on any listing to bookmark it!</p>`;
+        }
+    } catch (err) {
+        console.error("Failed to remove from wishlist:", err);
+        alert("Could not remove item. Please try again.");
     }
 }
 

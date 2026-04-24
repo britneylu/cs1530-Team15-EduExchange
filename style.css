@@ -305,3 +305,49 @@ a {
   margin-bottom: 10px;
   text-align: left;
 }
+
+/* ── Wishlist Save Button ── */
+.save-btn {
+  background: transparent;
+  border: 1px solid #ccc;
+  color: #555;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.save-btn:hover {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.save-btn.saved {
+  background: #e74c3c;
+  border-color: #e74c3c;
+  color: #fff;
+}
+
+/* ── Wishlist Modal Items ── */
+.wishlist-item {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.wishlist-item h3 {
+  margin: 0 0 6px;
+}
+
+/* ── Nav wishlist button ── */
+nav button#viewWishlistBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #e74c3c;
+  font-weight: bold;
+  padding: 0;
+  text-decoration: underline;
+}
