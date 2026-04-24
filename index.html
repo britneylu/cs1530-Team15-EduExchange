@@ -17,6 +17,7 @@
     <a href="login.html">Login</a>
     <a href="create-listing.html">Create Listing</a>
     <a href="signup.html">Sign Up</a>
+    <button id="viewWishlistBtn">♥ My Wishlist</button>
   </nav>
 
   <div class="container">
@@ -79,6 +80,17 @@
 
     <input type="text" id="chatInput" placeholder="Type a message...">
     <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<!-- WISHLIST MODAL -->
+<div id="wishlistModal" class="modal">
+  <div class="modal-content">
+    <span class="close-wishlist">&times;</span>
+
+    <h2>♥ My Saved Listings</h2>
+
+    <div id="wishlistItems"></div>
   </div>
 </div>
 
