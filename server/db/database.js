@@ -5,6 +5,15 @@ const db = new Database('./server/db/eduexchange.db');
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
+function ensureColumn(tableName, columnName, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${tableName})`).all();
+  const hasColumn = columns.some((column) => column.name === columnName);
+
+  if (!hasColumn) {
+    db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
+  }
+}
+
 // ─────────────────────────────────────────────
 // Schema Initialization
 // ─────────────────────────────────────────────
@@ -98,6 +107,24 @@ db.exec(`
     created_at   TEXT    NOT NULL DEFAULT (datetime('now')),
     UNIQUE(meetup_id, reporter_id)
   );
+
+  -- Persistent login sessions for future OAuth-based authentication
+  CREATE TABLE IF NOT EXISTS sessions (
+    id          TEXT PRIMARY KEY,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires_at  TEXT    NOT NULL,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
+ensureColumn('users', 'google_sub', 'TEXT');
+ensureColumn('users', 'avatar_url', 'TEXT');
+ensureColumn('users', 'last_login_at', 'TEXT');
+
+db.exec(`
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub
+  ON users(google_sub)
+  WHERE google_sub IS NOT NULL;
 `);
 
 // ─────────────────────────────────────────────

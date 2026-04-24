@@ -24,16 +24,71 @@
 
 <h2>Welcome Back</h2>
 
-<form>
-  <input type="email" placeholder="Email (@pitt.edu)">
-  <input type="password" placeholder="Password">
-
-  <button>Login</button>
-</form>
-
+<div class="auth-panel">
+  <p id="auth-message">Sign in with your university Google account to access EduExchange.</p>
+  <a id="google-login-button" class="button-link google-login" href="/auth/google">Continue with Google</a>
+  <button id="logout-button" type="button" class="secondary-button hidden">Log Out</button>
+  <div id="user-summary" class="hidden"></div>
 </div>
 
 </div>
 
+</div>
+
+<script>
+  const authMessage = document.getElementById('auth-message');
+  const googleLoginButton = document.getElementById('google-login-button');
+  const logoutButton = document.getElementById('logout-button');
+  const userSummary = document.getElementById('user-summary');
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get('error')) {
+    authMessage.textContent = params.get('error');
+    authMessage.classList.add('auth-error');
+  }
+
+  async function loadCurrentUser() {
+    try {
+      const response = await fetch('/auth/me');
+      if (!response.ok) {
+        return;
+      }
+
+      const payload = await response.json();
+      if (!payload.authenticated) {
+        return;
+      }
+
+      authMessage.textContent = 'You are already signed in.';
+      authMessage.classList.add('auth-success');
+      googleLoginButton.classList.add('hidden');
+
+      const heading = document.createElement('h3');
+      heading.textContent = 'Signed In';
+
+      const name = document.createElement('p');
+      name.textContent = payload.user.name;
+
+      const email = document.createElement('p');
+      email.textContent = payload.user.email;
+
+      const university = document.createElement('p');
+      university.textContent = payload.user.university;
+
+      userSummary.replaceChildren(heading, name, email, university);
+      userSummary.classList.remove('hidden');
+      logoutButton.classList.remove('hidden');
+    } catch (error) {
+      console.error('Failed to load current user', error);
+    }
+  }
+
+  logoutButton.addEventListener('click', async () => {
+    await fetch('/auth/logout', { method: 'POST' });
+    window.location.reload();
+  });
+
+  loadCurrentUser();
+</script>
 </body>
 </html>
