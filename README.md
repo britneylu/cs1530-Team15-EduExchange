@@ -32,7 +32,8 @@ The platform allows users to:
 - Browse available listings
 - Apply filters (category, price, condition)
 - View listing details
-- Message sellers through a chat modal (frontend prototype)
+- Message sellers through a chat modal
+- Save listings to a personal wishlist
 
 The goal of this project is to build a full-stack application using a REST API, a database-backed backend, and a dynamic frontend UI.
 
@@ -57,6 +58,6 @@ Thomas Jones: Configured Render deployment for web accessibility. Updated design
 
 Senay Yemane: Designed and implemented Google OAuth 2.0 authentication using Passport.js, including credential setup, session handling, and user creation flow.
 
-Xiangyu Li: Implemented SQLite database schema with 8 relational tables, enforced constraints, and enabled WAL mode. Built backend listing routes with filtering (FR3), duplicate prevention (FR12), and soft-delete support.
+Xiangyu Li: Implemented SQLite database schema with 8 relational tables, enforced constraints, and enabled WAL mode. Built backend listing routes with filtering (FR3), duplicate prevention (FR12), and soft-delete support. Implemented the wishlist/save listing feature (FR10) with full backend API routes and frontend Save button and wishlist modal.
 
 Jack Drabenstadt: Developed Express.js backend structure, created API route scaffolding for listings and messaging, integrated SQLite connection layer, and added Swagger UI documentation.
