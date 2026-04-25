@@ -25,19 +25,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatModal = document.getElementById("chatModal");
     const listingModal = document.getElementById("listingModal");
     const wishlistModal = document.getElementById("wishlistModal");
+    const reportModal = document.getElementById("reportModal");
+    const reportConfirmationModal = document.getElementById("reportConfirmationModal");
 
     const closeChat = document.querySelector(".close-chat");
     const closeListing = document.querySelector(".close");
     const closeWishlist = document.querySelector(".close-wishlist");
+    const closeReport = document.querySelector(".close-report");
+    const closeReportResult = document.querySelector(".close-report-confirmation");
 
     if (closeChat) { closeChat.onclick = () => (chatModal.style.display = "none"); }
     if (closeListing) { closeListing.onclick = () => (listingModal.style.display = "none"); }
     if (closeWishlist) { closeWishlist.onclick = () => (wishlistModal.style.display = "none"); }
+    if (closeReport) { closeReport.onclick = () => (reportModal.style.display = "none"); }
+    if (closeReportResult) { closeReportResult.onclick = () => (reportConfirmationModal.style.display = "none"); }
 
     window.onclick = (e) => {
         if (e.target === chatModal) chatModal.style.display = "none";
         if (e.target === listingModal) listingModal.style.display = "none";
         if (e.target === wishlistModal) wishlistModal.style.display = "none";
+        if (e.target === reportModal) reportModal.style.display = "none";
+        if (e.target === reportConfirmationModal) reportConfirmationModal.style.display = "none";
     };
 
     // LOAD INITIAL LISTINGS
@@ -99,8 +107,9 @@ async function openListingDetails(id) {
     const modalPrice = document.getElementById("modalPrice");
     const modalDescription = document.getElementById("modalDescription");
     const messageBtn = document.getElementById("messageBtn");
+    const reportBtn = document.getElementById("reportBtn");
 
-    if (!listingModal || !modalTitle || !modalPrice || !modalDescription || !messageBtn) return;
+    if (!listingModal || !modalTitle || !modalPrice || !modalDescription || !messageBtn || !reportBtn) return;
 
     try {
         const response = await fetch(`/listings/${id}`);
@@ -116,11 +125,54 @@ async function openListingDetails(id) {
             openChat(listing.id, listing.seller_id);
         };
 
+        reportBtn.onclick = () => {
+            listingModal.style.display = "none";
+            openReportScreen(listing.id, listing.seller_id);
+        };
+
         listingModal.style.display = "block";
     } catch (err) {
         console.error("Failed to load listing details:", err);
         alert("Could not load listing details. Please try again.");
     }
+}
+
+let currentReportListingId = null;
+let currentReportSellerId = null;
+
+// REPORT SCREEN
+function openReportScreen(listingId, sellerId) {
+    const reportModal = document.getElementById("reportModal");
+    if (!reportModal) return;
+
+    currentReportListingId = listingId;
+    currentReportSellerId = sellerId;
+    reportModal.style.display = "block";
+}
+
+// SUBMIT REPORT
+async function submitReport() {
+    const reasonInput = document.getElementById("reportReason").value;
+    const detailsInput = document.getElementById("reportDetails").value;
+
+    if (!reasonInput || !currentReportListingId) return;
+
+
+    try {
+        const response = await fetch("/reports", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ listing_id: currentReportListingId, reported_user_id: currentReportSellerId, reason: reasonInput, details: detailsInput }),
+        });
+        if (!response.ok) throw new Error("Failed to submit report");
+        const reportModal = document.getElementById("reportModal");
+        const reportResult = document.getElementById("reportConfirmationModal");
+        reportModal.style.display = "none";
+        reportResult.style.display = "block";
+    } catch (err) {
+        console.error("Failed to submit report:", err);
+    }
+
 }
 
 // Placeholder until auth is wired - buyer is always user 2, seller is user 1

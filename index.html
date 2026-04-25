@@ -64,6 +64,7 @@
     <p id="modalDescription"></p>
 
     <button id="messageBtn">Message Seller</button>
+    <button id="reportBtn">Report Listing</button>
   </div>
 </div>
 
@@ -80,6 +81,34 @@
 
     <input type="text" id="chatInput" placeholder="Type a message...">
     <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div id="reportModal" class="modal">
+  <div class="modal-content">
+    <span class="close-report">&times;</span>
+
+    <h2>Report Listing</h2>
+    <select id="reportReason">
+      <option value="">Select a reason</option>
+      <option value="Inappropriate Listing">Inappropriate Listing</option>
+      <option value="Scam">Scam</option>
+      <option value="Duplicate Listing">Duplicate Listing</option>
+      <option value="Other">Other</option>\
+    </select>
+    <textarea id="reportDetails" placeholder="Describe the issue..."></textarea>
+    <button onclick="submitReport()">Submit Report</button>
+  </div>
+</div>
+
+<!-- REPORT CONFIRMATION MODAL -->
+<div id="reportConfirmationModal" class="modal">
+  <div class="modal-content">
+    <span class="close-report-confirmation">&times;</span>
+
+    <h2>Report Submitted</h2>
+    <p>Thank you for your report. Our team will review it shortly.</p>
   </div>
 </div>
 

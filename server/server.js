@@ -34,12 +34,14 @@ const messagesRouter = require("./routes/messages");
 const chatsRouter = require("./routes/chats");
 const authRouter = require("./routes/auth");
 const wishlistRouter = require("./routes/wishlist");
+const reportsRouter = require("./routes/reports");
 
 app.use("/listings", listingsRouter);
 app.use("/messages", messagesRouter);
 app.use("/chats", chatsRouter);
 app.use("/auth", authRouter);
 app.use("/wishlist", wishlistRouter);
+app.use("/reports", reportsRouter);
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "../index.html"));
