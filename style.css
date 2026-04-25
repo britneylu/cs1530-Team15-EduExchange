@@ -290,11 +290,19 @@ a {
 }
 
 /* CLOSE BUTTONS */
-.close, .close-chat {
+.close, .close-chat, .close-report, .close-report-confirmation {
   float: right;
   font-size: 24px;
   cursor: pointer;
 }
+
+/* Report Model */
+#reportModal select, #reportModal textarea {
+  display:block;
+  margin: 10px auto;
+  width: 100%
+}
+
 
 /* CHAT BOX */
 .chat-box {
