@@ -128,9 +128,10 @@ router.get('/:id', (req, res) => {
  */
 router.post('/', (req, res) => {
     try {
-        const { seller_id, title, description, price, category, condition, image_url } = req.body;
+        const { title, description, price, category, condition, image_url } = req.body;
+        const seller_id = req.user?.id;
         if (!seller_id || !title || !description || !price || !category || !condition) {
-            return res.status(400).json({ error: 'Missing required fields: seller_id, title, description, price, category, condition' });
+            return res.status(400).json({ error: 'Missing required fields: title, description, price, category, condition' });
         }
 
         // Check for duplicate active listing by the same seller (FR12)
