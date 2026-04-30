@@ -8,8 +8,7 @@ router.post('/', (req, res) => {
         if (!listing_id || !reported_user_id || !reason) {
             return res.status(400).json({ error: "Missing required fields" });
         }
-        // const reporter_id = req.session?.userId;
-        const reporter_id = 1; // Placeholder for testing - replace with session user ID in production
+        const reporter_id = req.user?.id;
         if (!reporter_id) {
             return res.status(401).json({ error: "Unauthorized" });
         }

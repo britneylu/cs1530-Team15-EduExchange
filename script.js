@@ -1,5 +1,6 @@
 // PAGE TRANSITIONS + INIT
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    await initCurrentUser();
     document.body.style.opacity = "1";
 
     // smooth navigation
@@ -90,7 +91,9 @@ function renderListings(listings) {
         <h3>${item.title}</h3>
         <p>$${item.price} • ${item.condition}</p>
         <button onclick="openListingDetails(${item.id})">View Details</button>
-        <button onclick="openChat(${item.id}, ${item.seller_id})">Message Seller</button>
+        ${item.seller_id === CURRENT_USER_ID
+            ? `<button disabled>Your Listing</button>`
+            : `<button onclick="openChat(${item.id}, ${item.seller_id})">Message Seller</button>`}
         <button class="save-btn" id="save-btn-${item.id}" onclick="toggleWishlist(${item.id}, this)">♡ Save</button>
       </div>
     `;
@@ -120,10 +123,18 @@ async function openListingDetails(id) {
         modalPrice.textContent = `$${listing.price} • ${listing.condition} • ${listing.category}`;
         modalDescription.textContent = listing.description;
 
-        messageBtn.onclick = () => {
-            listingModal.style.display = "none";
-            openChat(listing.id, listing.seller_id);
-        };
+        if (listing.seller_id === CURRENT_USER_ID) {
+            messageBtn.textContent = "Your Listing";
+            messageBtn.disabled = true;
+            messageBtn.onclick = null;
+        } else {
+            messageBtn.textContent = "Message Seller";
+            messageBtn.disabled = false;
+            messageBtn.onclick = () => {
+                listingModal.style.display = "none";
+                openChat(listing.id, listing.seller_id);
+            };
+        }
 
         reportBtn.onclick = () => {
             listingModal.style.display = "none";
@@ -175,8 +186,19 @@ async function submitReport() {
 
 }
 
-// Placeholder until auth is wired - buyer is always user 2, seller is user 1
-const CURRENT_USER_ID = 2;
+let CURRENT_USER_ID = null;
+
+async function initCurrentUser() {
+    try {
+        const res = await fetch('/auth/me');
+        if (res.ok) {
+            const data = await res.json();
+            CURRENT_USER_ID = data.user?.id ?? null;
+        }
+    } catch (err) {
+        console.error("Could not fetch current user:", err);
+    }
+}
 
 let currentChatId = null;
 
@@ -405,7 +427,7 @@ async function handleCreateListing(event) {
     event.preventDefault();
 
     const listing = {
-        seller_id: 1, // temporary placeholder until login/auth wiring is complete
+        seller_id: CURRENT_USER_ID,
         title: document.getElementById("title").value,
         description: document.getElementById("description").value,
         price: document.getElementById("price").value,
