@@ -56,8 +56,7 @@ Emily Bartell: Developed the frontend UI for main pages of EduExchange, includin
 
 Thomas Jones: Configured Render deployment for web accessibility. Updated design goals traceability to align technology choices with system requirements.
 
-Senay Yemane: Designed and implemented Google OAuth 2.0 authentication using Passport.js, including credential setup, session handling, and user creation flow.
-
+Senay Yemane: Designed and implemented Google OAuth 2.0 authentication, including Google credential setup, backend callback handling, SQLite user creation/update, and session management.
 Xiangyu Li: Implemented SQLite database schema with 8 relational tables, enforced constraints, and enabled WAL mode. Built backend listing routes with filtering (FR3), duplicate prevention (FR12), and soft-delete support. Implemented the wishlist/save listing feature (FR10) with full backend API routes and frontend Save button and wishlist modal.
 
 Jack Drabenstadt: Developed Express.js backend structure, created API route scaffolding for listings and messaging, integrated SQLite connection layer, and added Swagger UI documentation.
