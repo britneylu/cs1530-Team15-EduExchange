@@ -60,7 +60,7 @@ https://eduexchange-t548.onrender.com/
 - **Britney Lu** — Set up repository infrastructure and implemented frontend-to-database filtering integration. Documented the final README.
 - **Emily Bartell** — Developed major frontend pages and listing/messaging UI interactions.
 - **Thomas Jones** — Configured Render deployment and aligned design-goal traceability with implementation choices. Implemented the report listing feature.
-- **Senay Yemane** — Designed and implemented Google OAuth 2.0 with Passport.js, including credentials, sessions, and user creation flow.
+- **Senay Yemane** — Designed and implemented Google OAuth 2.0 authentication, including Google credential setup, backend callback handling, SQLite user creation/update, and session management.
 - **Xiangyu Li** — Built SQLite schema (8 relational tables), implemented listing/filtering backend logic, duplicate prevention, soft-delete support, and wishlist backend/frontend integration.
 - **Jack Drabenstadt** — Developed Express backend structure, created API route scaffolding for listings and messaging, integrated SQLite connection layer, and added Swagger UI documentation.
 
